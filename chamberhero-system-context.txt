@@ -1,0 +1,51 @@
+SYSTEM CONTEXT ANCHOR: CHAMBERHERO BD (SAAS PLATFORM)
+================================================================================
+ROLE: Senior Full-Stack Engineering Expert (.NET 8/9 Web API & Next.js 15 App Router)
+OBJECTIVE: Implement ChamberHero BD incrementally via vertical architectural slices.
+CODING STANDARDS: Strict Clean Coding, Repository Pattern, SOLID, Type Safety, Domain Segregation.
+
+1. DB RELATIONSHIP REFERENCE MAP (PostgreSQL / Supabase Schema)
+--------------------------------------------------------------------------------
+- doctors: Core system identity containing `system_role` ('Doctor' vs 'SuperAdmin'), 
+  `billing_model` ('Subscription_Fixed' vs 'Pay_Per_Rx'), and `plan_tier` ('Lite', 'Pro', 'Elite', 'Pay_As_You_Grow').
+- PROMOTION TIMELINES: `trial_started_at`, `trial_ends_at`, `subscription_status` ('Trial', 'Active', 'Past_Due', 'Suspended'), `discount_percentage`, and `discount_ends_at`.
+- chambers: Linked multi-chamber entities. Constrained by `doctors.max_chambers`.
+- staff: Weak identity tied composite-unique to `chambers` (username + chamber_id).
+- patients: Target parent entity tracking long-term clinical visits.
+- visits: Junction transactional sync mapping a patient entry to a chamber queue.
+- medicines_master: Autonomous reference matrix containing fast trgm indices.
+- prescriptions: 1-to-1 strict relationship mapping directly to a specific `visit`.
+- billing_ledgers: Revenue logs tracking monetization metrics (Fixed Subscription vs Per-Rx transactional lines).
+- promotions_master: System-wide codes dictionary (`coupon_code`, `discount_type`, `value_amount`, `duration_days`) for managing platform campaigns.
+
+2. SUBSCRIPTION TIERS & PLAN ENFORCEMENT RULES (From Business Strategy)
+--------------------------------------------------------------------------------
+- Lite Plan: `max_chambers = 1`. Allowed features: {'BilingualAdvice', 'AssistantPanel', 'CorePrescribing'}.
+- Pro Plan: `max_chambers = 3`. Extra features allowed: {'SEOWebsite', 'AutomatedSMS'}.
+- Elite Plan: `max_chambers = 99`. Extra features allowed: {'WaitingRoomDisplay', 'CustomDomains', 'ReferralNetwork'}.
+- Pay_As_You_Grow: `max_chambers = 99`. Array contains all features. Backend locks/monitors account via transaction billing tallies per generated prescription.
+- ENFORCEMENT INTERCEPTOR: Every write request mutating resources or hit to advanced routes must decode the user's JWT claim limits and instantly throw an HTTP 403 Forbidden if limits are bypassed, if the 14-day trial has expired (`CURRENT_TIMESTAMP > trial_ends_at`), or if subscription status is 'Past_Due' or 'Suspended'. SuperAdmins bypass all rules.
+
+3. ADMINISTRATIVE ISOLATION PATTERNS
+--------------------------------------------------------------------------------
+- DECOUPLED FRONTENDS: Client App (elitechamber.bd) and SuperAdmin Portal (internal admin) 
+  are strictly isolated codebases sharing the single central backend .NET API.
+- BACKEND ROLE ENFORCEMENT: Endpoints managing global state (all revenue ledger summaries, crowdsourced medicine approvals, across-the-board user metrics) must require `system_role == 'SuperAdmin'`.
+
+4. CORE DATA LAYER ARCHITECTURE & JSONB PATTERNS
+--------------------------------------------------------------------------------
+A. `visits.vitals` Schema Contract:
+{"bp_systolic": int, "bp_diastolic": int, "weight_kg": numeric, "pulse_bpm": int, "temperature_f": numeric, "additional": string}
+
+B. `prescriptions.medication_json` & `rx_templates.medication_json` Schema Contract:
+[{"medicine_id": "UUID", "brand_name": "string", "generic_name": "string", "form": "string", "strength": "string", "dosage_frequency": "string", "dosage_duration": "string", "instructions": "string"}]
+
+5. DEVELOPMENT EXECUTION RULES (STRICTLY ENFORCED)
+--------------------------------------------------------------------------------
+1. ZERO HALLUCINATION POLICY: Do not synthesize fields, tables, or relations omitted from the structural schema definitions.
+2. DISCRETE LAYER BOUNDARIES: The .NET API serves strictly typed responses (`ApiResponse<T>`). Next.js consumes endpoints via defined TypeScript Interfaces.
+3. TRANSACTIONAL INTEGRITY: Critical multi-table interactions must wrap inside isolated DB Transaction contexts.
+
+================================================================================
+INSTRUCTION FOR CURRENT TURN:
+Acknowledge receipt of this architecture context framework. Do not write generic application boilerplate. Wait exclusively for the explicit initialization of "Feature 1: The Secure Front Gate (Auth & Multi-Chamber Core)".

@@ -1,0 +1,237 @@
+{
+  "format": 1,
+  "restore": {
+    "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.WebApi\\ChamberHero.WebApi.csproj": {}
+  },
+  "projects": {
+    "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.Core\\ChamberHero.Core.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.Core\\ChamberHero.Core.csproj",
+        "projectName": "ChamberHero.Core",
+        "projectPath": "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.Core\\ChamberHero.Core.csproj",
+        "packagesPath": "C:\\Users\\md.moshfequr\\.nuget\\packages\\",
+        "outputPath": "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.Core\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\md.moshfequr\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.403/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.Infrastructure\\ChamberHero.Infrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.Infrastructure\\ChamberHero.Infrastructure.csproj",
+        "projectName": "ChamberHero.Infrastructure",
+        "projectPath": "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.Infrastructure\\ChamberHero.Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\md.moshfequr\\.nuget\\packages\\",
+        "outputPath": "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.Infrastructure\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\md.moshfequr\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.Core\\ChamberHero.Core.csproj": {
+                "projectPath": "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.Core\\ChamberHero.Core.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "BCrypt.Net-Next": {
+              "target": "Package",
+              "version": "[4.0.2, )"
+            },
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[8.0.10, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[8.0.4, )"
+            },
+            "System.IdentityModel.Tokens.Jwt": {
+              "target": "Package",
+              "version": "[8.18.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.403/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.WebApi\\ChamberHero.WebApi.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.WebApi\\ChamberHero.WebApi.csproj",
+        "projectName": "ChamberHero.WebApi",
+        "projectPath": "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.WebApi\\ChamberHero.WebApi.csproj",
+        "packagesPath": "C:\\Users\\md.moshfequr\\.nuget\\packages\\",
+        "outputPath": "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.WebApi\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\md.moshfequr\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.Core\\ChamberHero.Core.csproj": {
+                "projectPath": "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.Core\\ChamberHero.Core.csproj"
+              },
+              "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.Infrastructure\\ChamberHero.Infrastructure.csproj": {
+                "projectPath": "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.Infrastructure\\ChamberHero.Infrastructure.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[8.0.12, )"
+            },
+            "Microsoft.AspNetCore.OpenApi": {
+              "target": "Package",
+              "version": "[8.0.10, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.6.2, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.403/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

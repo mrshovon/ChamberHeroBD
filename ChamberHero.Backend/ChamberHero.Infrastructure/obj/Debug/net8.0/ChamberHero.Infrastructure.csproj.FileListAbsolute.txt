@@ -1,0 +1,15 @@
+F:\Moshfeq\Projects\ChamberHeroBD\ChamberHero.Backend\ChamberHero.Infrastructure\bin\Debug\net8.0\ChamberHero.Infrastructure.deps.json
+F:\Moshfeq\Projects\ChamberHeroBD\ChamberHero.Backend\ChamberHero.Infrastructure\bin\Debug\net8.0\ChamberHero.Infrastructure.dll
+F:\Moshfeq\Projects\ChamberHeroBD\ChamberHero.Backend\ChamberHero.Infrastructure\bin\Debug\net8.0\ChamberHero.Infrastructure.pdb
+F:\Moshfeq\Projects\ChamberHeroBD\ChamberHero.Backend\ChamberHero.Infrastructure\bin\Debug\net8.0\ChamberHero.Core.dll
+F:\Moshfeq\Projects\ChamberHeroBD\ChamberHero.Backend\ChamberHero.Infrastructure\bin\Debug\net8.0\ChamberHero.Core.pdb
+F:\Moshfeq\Projects\ChamberHeroBD\ChamberHero.Backend\ChamberHero.Infrastructure\obj\Debug\net8.0\ChamberHero.Infrastructure.csproj.AssemblyReference.cache
+F:\Moshfeq\Projects\ChamberHeroBD\ChamberHero.Backend\ChamberHero.Infrastructure\obj\Debug\net8.0\ChamberHero.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+F:\Moshfeq\Projects\ChamberHeroBD\ChamberHero.Backend\ChamberHero.Infrastructure\obj\Debug\net8.0\ChamberHero.Infrastructure.AssemblyInfoInputs.cache
+F:\Moshfeq\Projects\ChamberHeroBD\ChamberHero.Backend\ChamberHero.Infrastructure\obj\Debug\net8.0\ChamberHero.Infrastructure.AssemblyInfo.cs
+F:\Moshfeq\Projects\ChamberHeroBD\ChamberHero.Backend\ChamberHero.Infrastructure\obj\Debug\net8.0\ChamberHero.Infrastructure.csproj.CoreCompileInputs.cache
+F:\Moshfeq\Projects\ChamberHeroBD\ChamberHero.Backend\ChamberHero.Infrastructure\obj\Debug\net8.0\ChamberH.24F1AC8B.Up2Date
+F:\Moshfeq\Projects\ChamberHeroBD\ChamberHero.Backend\ChamberHero.Infrastructure\obj\Debug\net8.0\ChamberHero.Infrastructure.dll
+F:\Moshfeq\Projects\ChamberHeroBD\ChamberHero.Backend\ChamberHero.Infrastructure\obj\Debug\net8.0\refint\ChamberHero.Infrastructure.dll
+F:\Moshfeq\Projects\ChamberHeroBD\ChamberHero.Backend\ChamberHero.Infrastructure\obj\Debug\net8.0\ChamberHero.Infrastructure.pdb
+F:\Moshfeq\Projects\ChamberHeroBD\ChamberHero.Backend\ChamberHero.Infrastructure\obj\Debug\net8.0\ref\ChamberHero.Infrastructure.dll

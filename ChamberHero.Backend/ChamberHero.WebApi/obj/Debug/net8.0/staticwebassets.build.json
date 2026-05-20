@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "YuGp3LSq2+FBdPhLyc16jJ/d8hjGC7sWH5Rd06Bm6tk=",
+  "Source": "ChamberHero.WebApi",
+  "BasePath": "_content/ChamberHero.WebApi",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
