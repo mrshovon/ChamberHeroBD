@@ -34,17 +34,52 @@ public class ChamberHeroDbContext : DbContext, IDbContext
         modelBuilder.Entity<Doctor>(entity =>
         {
             entity.HasKey(x => x.Id);
-            entity.Property(x => x.Email).IsRequired();
-            entity.Property(x => x.PasswordHash).IsRequired();
-            entity.Property(x => x.FullName).IsRequired();
-            entity.Property(x => x.FeaturesAllowed).HasColumnType("text[]");
+            entity.ToTable("doctors");
+
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.Email).HasColumnName("email").IsRequired();
+            entity.HasIndex(x => x.Email).IsUnique();
+
+            entity.Property(x => x.PasswordHash).HasColumnName("password_hash").IsRequired();
+            entity.Property(x => x.FullName).HasColumnName("full_name").IsRequired();
+            entity.Property(x => x.BmdcRegistrationNo).HasColumnName("bmdc_registration_no").IsRequired();
+            entity.HasIndex(x => x.BmdcRegistrationNo).IsUnique();
+
+            entity.Property(x => x.PhoneNo).HasColumnName("phone_no").IsRequired();
+            entity.HasIndex(x => x.PhoneNo).IsUnique();
+
+            entity.Property(x => x.QualificationRaw).HasColumnName("qualification_raw").IsRequired();
+            entity.Property(x => x.SystemRole).HasColumnName("system_role").HasConversion<string>().IsRequired();
+            entity.Property(x => x.BillingModel).HasColumnName("billing_model").HasConversion<string>().IsRequired();
+            entity.Property(x => x.PlanTier).HasColumnName("plan_tier").HasConversion<string>().IsRequired();
+            entity.Property(x => x.MaxChambers).HasColumnName("max_chambers").IsRequired();
+            entity.Property(x => x.FeaturesAllowed).HasColumnName("features_allowed").HasColumnType("varchar(50)[]").IsRequired();
+            entity.Property(x => x.SubscriptionStatus).HasColumnName("subscription_status").HasConversion<string>().IsRequired();
+            entity.Property(x => x.TrialStartedAt).HasColumnName("trial_started_at");
+            entity.Property(x => x.TrialEndsAt).HasColumnName("trial_ends_at");
+            entity.Property(x => x.AppliedCouponCode).HasColumnName("applied_coupon_code");
+            entity.Property(x => x.DiscountPercentage).HasColumnName("discount_percentage").HasPrecision(5, 2).HasDefaultValue(0.00m);
+            entity.Property(x => x.DiscountEndsAt).HasColumnName("discount_ends_at");
+            entity.Property(x => x.IsActive).HasColumnName("is_active").IsRequired();
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
         });
 
         modelBuilder.Entity<Chamber>(entity =>
         {
             entity.HasKey(x => x.Id);
-            entity.Property(x => x.Name).IsRequired();
-            entity.Property(x => x.Address).IsRequired();
+            entity.ToTable("chambers");
+
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.DoctorId).HasColumnName("doctor_id").IsRequired();
+            entity.Property(x => x.Name).HasColumnName("name").IsRequired();
+            entity.Property(x => x.Address).HasColumnName("address").IsRequired();
+            entity.Property(x => x.PhoneNo).HasColumnName("phone_no");
+            entity.Property(x => x.CustomDomain).HasColumnName("custom_domain");
+            entity.HasIndex(x => x.CustomDomain).IsUnique();
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
+
             entity.HasOne<Doctor>().WithMany().HasForeignKey(x => x.DoctorId).OnDelete(DeleteBehavior.Cascade);
         });
     }

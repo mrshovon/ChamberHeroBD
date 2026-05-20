@@ -989,35 +989,32 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\md.moshfequr\\.nuget\\packages\\": {}
+    "C:\\Users\\User\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.Infrastructure\\ChamberHero.Infrastructure.csproj",
+      "projectUniqueName": "D:\\PROJECTS\\ChamberBD\\ChamberHero.Backend\\ChamberHero.Infrastructure\\ChamberHero.Infrastructure.csproj",
       "projectName": "ChamberHero.Infrastructure",
-      "projectPath": "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.Infrastructure\\ChamberHero.Infrastructure.csproj",
-      "packagesPath": "C:\\Users\\md.moshfequr\\.nuget\\packages\\",
-      "outputPath": "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.Infrastructure\\obj\\",
+      "projectPath": "D:\\PROJECTS\\ChamberBD\\ChamberHero.Backend\\ChamberHero.Infrastructure\\ChamberHero.Infrastructure.csproj",
+      "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
+      "outputPath": "D:\\PROJECTS\\ChamberBD\\ChamberHero.Backend\\ChamberHero.Infrastructure\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\md.moshfequr\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.Core\\ChamberHero.Core.csproj": {
-              "projectPath": "F:\\Moshfeq\\Projects\\ChamberHeroBD\\ChamberHero.Backend\\ChamberHero.Core\\ChamberHero.Core.csproj"
+            "D:\\PROJECTS\\ChamberBD\\ChamberHero.Backend\\ChamberHero.Core\\ChamberHero.Core.csproj": {
+              "projectPath": "D:\\PROJECTS\\ChamberBD\\ChamberHero.Backend\\ChamberHero.Core\\ChamberHero.Core.csproj"
             }
           }
         }
@@ -1070,7 +1067,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.403/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.421/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

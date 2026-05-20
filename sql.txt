@@ -1,0 +1,183 @@
+-- Enable UUID extension for secure, non-sequential IDs
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ============================================================================
+-- 1. CORE IDENTITY, AUTHENTICATION & SUBSCRIPTION MODULE (Tenant Control)
+-- ============================================================================
+
+CREATE TABLE doctors (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    bmdc_registration_no VARCHAR(50) UNIQUE NOT NULL,
+    phone_no VARCHAR(20) UNIQUE NOT NULL,
+    qualification_raw TEXT NOT NULL, -- Full qualification text for prescription header
+    
+    -- SYSTEM ADMINISTRATIVE ISOLATION (Secures your Master SuperAdmin Panel)
+    system_role VARCHAR(20) DEFAULT 'Doctor' NOT NULL CHECK (system_role IN ('Doctor', 'SuperAdmin')),
+    
+    -- BUSINESS MODEL & TIERS (From Business Strategy)
+    billing_model VARCHAR(20) NOT NULL CHECK (billing_model IN ('Subscription_Fixed', 'Pay_Per_Rx')),
+    plan_tier VARCHAR(20) NOT NULL CHECK (plan_tier IN ('Lite', 'Pro', 'Elite', 'Pay_As_You_Grow')),
+    
+    -- RESOURCE COUNTERS & FEATURE FLAGS FOR AUTOMATED AI RESTRICTIONS
+    max_chambers INT NOT NULL DEFAULT 1,
+    features_allowed VARCHAR(50)[] NOT NULL DEFAULT '{BilingualAdvice,AssistantPanel,CorePrescribing}', -- Array of unlocked features
+    
+    -- CAMPAIGNS, TIME-BOUND TRIALS & DISCOUNT MANAGEMENT
+    subscription_status VARCHAR(20) DEFAULT 'Trial' NOT NULL CHECK (subscription_status IN ('Trial', 'Active', 'Past_Due', 'Suspended')),
+    trial_started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    trial_ends_at TIMESTAMP WITH TIME ZONE, -- Automatically set to Now + 14 Days during registration
+    applied_coupon_code VARCHAR(50),
+    discount_percentage NUMERIC(5, 2) DEFAULT 0.00,
+    discount_ends_at TIMESTAMP WITH TIME ZONE,
+    
+    is_active BOOLEAN DEFAULT TRUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE chambers (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    doctor_id UUID NOT NULL REFERENCES doctors(id) ON DELETE CASCADE,
+    name VARCHAR(150) NOT NULL,
+    address TEXT NOT NULL,
+    phone_no VARCHAR(20),
+    custom_domain VARCHAR(255) UNIQUE, -- Unlocked only for Elite Plan users
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE staff (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    chamber_id UUID NOT NULL REFERENCES chambers(id) ON DELETE CASCADE,
+    username VARCHAR(50) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    role VARCHAR(20) NOT NULL CHECK (role IN ('Assistant', 'Admin')),
+    is_active BOOLEAN DEFAULT TRUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    -- Restricts an assistant username to be unique strictly WITHIN that specific chamber branch
+    CONSTRAINT unique_chamber_username UNIQUE (chamber_id, username)
+);
+
+-- ============================================================================
+-- 2. PATIENT INTAKE & REAL-TIME QUEUE MODULE
+-- ============================================================================
+
+CREATE TABLE patients (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    doctor_id UUID NOT NULL REFERENCES doctors(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    phone_no VARCHAR(20) NOT NULL,
+    gender VARCHAR(10) NOT NULL CHECK (gender IN ('Male', 'Female', 'Other')),
+    date_of_birth DATE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE visits (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    chamber_id UUID NOT NULL REFERENCES chambers(id) ON DELETE RESTRICT,
+    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+    serial_number INT NOT NULL,
+    visit_date DATE DEFAULT CURRENT_DATE NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'Waiting' CHECK (status IN ('Waiting', 'In Chamber', 'Completed', 'Canceled')),
+    -- Vitals JSON Block to accommodate arbitrary, evolving parameters (BP, Weight, Pulse, etc.) without table bloat
+    vitals JSONB DEFAULT '{}'::jsonb NOT NULL, 
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+-- ============================================================================
+-- 3. MEDICAL KNOWLEDGE & PRESCRIPTION MODULE
+-- ============================================================================
+
+CREATE TABLE medicines_master (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    brand_name VARCHAR(150) NOT NULL,
+    generic_name VARCHAR(200) NOT NULL,
+    form VARCHAR(50) NOT NULL,          -- Tab, Cap, Syr, Inj, etc.
+    strength VARCHAR(50) NOT NULL,      -- 500mg, 10mg, etc.
+    manufacturer VARCHAR(150),
+    is_crowdsourced BOOLEAN DEFAULT FALSE NOT NULL, -- Flags entries awaiting SuperAdmin review/merge
+    created_by_doctor_id UUID REFERENCES doctors(id) ON DELETE SET NULL
+);
+
+CREATE TABLE prescriptions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    visit_id UUID UNIQUE NOT NULL REFERENCES visits(id) ON DELETE RESTRICT, -- Strict 1:1 map to current visit
+    doctor_id UUID NOT NULL REFERENCES doctors(id) ON DELETE RESTRICT,
+    patient_id UUID NOT NULL REFERENCES patients(id) ON DELETE RESTRICT,
+    chief_complaints TEXT,
+    clinical_findings TEXT,
+    diagnosis TEXT,
+    -- JSONB structural blocks containing arrays of prescribed medications and frequencies
+    medication_json JSONB NOT NULL DEFAULT '[]'::jsonb, 
+    advice_english TEXT,
+    advice_bangla TEXT,
+    next_visit_date DATE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE rx_templates (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    doctor_id UUID NOT NULL REFERENCES doctors(id) ON DELETE CASCADE,
+    template_name VARCHAR(100) NOT NULL,
+    chief_complaints TEXT,
+    diagnosis TEXT,
+    medication_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+    advice_english TEXT,
+    advice_bangla TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+-- ============================================================================
+-- 4. CAMPAIGNS, FINANCIAL LEDGER & AUDIT MODULE (Model A & B Compliant)
+-- ============================================================================
+
+CREATE TABLE promotions_master (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    coupon_code VARCHAR(50) UNIQUE NOT NULL,
+    discount_type VARCHAR(20) NOT NULL CHECK (discount_type IN ('Trial_Extension', 'Percentage_Discount', 'Fixed_Amount')),
+    value_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00, -- e.g., 20.00 for a 20% discount code
+    duration_days INT, -- Number of operational days the discount/extension lasts
+    is_active BOOLEAN DEFAULT TRUE NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE billing_ledgers (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    doctor_id UUID NOT NULL REFERENCES doctors(id) ON DELETE RESTRICT,
+    chamber_id UUID NOT NULL REFERENCES chambers(id) ON DELETE RESTRICT,
+    visit_id UUID REFERENCES visits(id) ON DELETE SET NULL, -- Maps to a prescription for Model B per-Rx calculations
+    billing_model VARCHAR(20) NOT NULL CHECK (billing_model IN ('Subscription_Fixed', 'Pay_Per_Rx')),
+    amount_charged NUMERIC(10, 2) NOT NULL,
+    payment_status VARCHAR(20) NOT NULL DEFAULT 'Pending' CHECK (payment_status IN ('Pending', 'Paid', 'Failed')),
+    transaction_id VARCHAR(100) UNIQUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+-- ============================================================================
+-- 5. PERFORMANCE & FUZZY AUTOCOMPLETE INDEXES
+-- ============================================================================
+
+-- Identity Tenant Access Index Routing
+CREATE INDEX idx_chambers_doctor ON chambers(doctor_id);
+CREATE INDEX idx_staff_chamber ON staff(chamber_id);
+
+-- Operational Real-time Queue Indices (Speeds up live dashboard screens)
+CREATE INDEX idx_visits_date_status ON visits(visit_date, status);
+CREATE INDEX idx_visits_chamber_date ON visits(chamber_id, visit_date);
+
+-- Patient Registry Verification Indices
+CREATE INDEX idx_patients_phone ON patients(phone_no);
+CREATE INDEX idx_patients_doctor ON patients(doctor_id);
+
+-- Medicine Engine Fuzzy Text Indices (Trigram execution for high-speed autocomplete)
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE INDEX idx_med_master_brand_trgm ON medicines_master USING gin (brand_name gin_trgm_ops);
+CREATE INDEX idx_med_master_generic_trgm ON medicines_master USING gin (generic_name gin_trgm_ops);
+
+-- Financial Auditing Tracking
+CREATE INDEX idx_billing_doctor_status ON billing_ledgers(doctor_id, payment_status);

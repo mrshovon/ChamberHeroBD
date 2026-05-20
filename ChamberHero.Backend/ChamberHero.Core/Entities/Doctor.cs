@@ -36,9 +36,9 @@ public class Doctor
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
-    public string? BmdcRegistrationNo { get; set; }
-    public string? PhoneNo { get; set; }
-    public string? QualificationRaw { get; set; }
+    public string BmdcRegistrationNo { get; set; } = string.Empty;
+    public string PhoneNo { get; set; } = string.Empty;
+    public string QualificationRaw { get; set; } = string.Empty;
     public SystemRole SystemRole { get; set; }
     public BillingModel BillingModel { get; set; }
     public PlanTier PlanTier { get; set; }
@@ -47,4 +47,10 @@ public class Doctor
     public SubscriptionStatus SubscriptionStatus { get; set; }
     public DateTime TrialStartedAt { get; set; }
     public DateTime TrialEndsAt { get; set; }
+    public string? AppliedCouponCode { get; set; }
+    public decimal DiscountPercentage { get; set; }
+    public DateTime? DiscountEndsAt { get; set; }
+    public bool IsActive { get; set; } = true;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

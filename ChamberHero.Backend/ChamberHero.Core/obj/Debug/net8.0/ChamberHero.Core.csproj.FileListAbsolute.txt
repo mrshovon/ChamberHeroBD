@@ -9,3 +9,15 @@ F:\Moshfeq\Projects\ChamberHeroBD\ChamberHero.Backend\ChamberHero.Core\obj\Debug
 F:\Moshfeq\Projects\ChamberHeroBD\ChamberHero.Backend\ChamberHero.Core\obj\Debug\net8.0\refint\ChamberHero.Core.dll
 F:\Moshfeq\Projects\ChamberHeroBD\ChamberHero.Backend\ChamberHero.Core\obj\Debug\net8.0\ChamberHero.Core.pdb
 F:\Moshfeq\Projects\ChamberHeroBD\ChamberHero.Backend\ChamberHero.Core\obj\Debug\net8.0\ref\ChamberHero.Core.dll
+D:\PROJECTS\ChamberBD\ChamberHero.Backend\ChamberHero.Core\bin\Debug\net8.0\ChamberHero.Core.deps.json
+D:\PROJECTS\ChamberBD\ChamberHero.Backend\ChamberHero.Core\bin\Debug\net8.0\ChamberHero.Core.dll
+D:\PROJECTS\ChamberBD\ChamberHero.Backend\ChamberHero.Core\bin\Debug\net8.0\ChamberHero.Core.pdb
+D:\PROJECTS\ChamberBD\ChamberHero.Backend\ChamberHero.Core\obj\Debug\net8.0\ChamberHero.Core.GeneratedMSBuildEditorConfig.editorconfig
+D:\PROJECTS\ChamberBD\ChamberHero.Backend\ChamberHero.Core\obj\Debug\net8.0\ChamberHero.Core.AssemblyInfoInputs.cache
+D:\PROJECTS\ChamberBD\ChamberHero.Backend\ChamberHero.Core\obj\Debug\net8.0\ChamberHero.Core.AssemblyInfo.cs
+D:\PROJECTS\ChamberBD\ChamberHero.Backend\ChamberHero.Core\obj\Debug\net8.0\ChamberHero.Core.csproj.CoreCompileInputs.cache
+D:\PROJECTS\ChamberBD\ChamberHero.Backend\ChamberHero.Core\obj\Debug\net8.0\ChamberHero.Core.sourcelink.json
+D:\PROJECTS\ChamberBD\ChamberHero.Backend\ChamberHero.Core\obj\Debug\net8.0\ChamberHero.Core.dll
+D:\PROJECTS\ChamberBD\ChamberHero.Backend\ChamberHero.Core\obj\Debug\net8.0\refint\ChamberHero.Core.dll
+D:\PROJECTS\ChamberBD\ChamberHero.Backend\ChamberHero.Core\obj\Debug\net8.0\ChamberHero.Core.pdb
+D:\PROJECTS\ChamberBD\ChamberHero.Backend\ChamberHero.Core\obj\Debug\net8.0\ref\ChamberHero.Core.dll
