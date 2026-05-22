@@ -18,7 +18,10 @@ public class DoctorRepository : Repository<Doctor>, IDoctorRepository
 
     public async Task<IEnumerable<Doctor>> GetAllAsync()
     {
-        return await _db.Doctors.AsNoTracking().ToListAsync();
+        return await _db.Doctors
+            .Include(d => d.Chambers)
+            .AsNoTracking()
+            .ToListAsync();
     }
 
     public async Task<Doctor?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)

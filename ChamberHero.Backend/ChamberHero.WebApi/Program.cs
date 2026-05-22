@@ -31,6 +31,7 @@ builder.Services.AddDbContext<ChamberHeroDbContext>(options =>
 
 builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
 builder.Services.AddScoped<IChamberRepository, ChamberRepository>();
+builder.Services.AddScoped<IPatientRepository, PatientRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Authentication

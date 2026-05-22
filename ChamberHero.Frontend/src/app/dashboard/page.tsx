@@ -1,15 +1,35 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Doctor } from "@/types/doctor";
+import type { Patient } from "@/types/patient";
+import { getToken } from "@/lib/auth";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5129";
-const API_URL = `${API_BASE_URL}/doctors`;
+const DOCTORS_API_URL = `${API_BASE_URL}/doctors`;
+const PATIENTS_API_URL = `${API_BASE_URL}/patients`;
+
+const genderOptions = ["Male", "Female", "Other"];
+const bloodGroupOptions = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [patients, setPatients] = useState<Patient[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPatientsLoading, setIsPatientsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formSuccess, setFormSuccess] = useState<string | null>(null);
+  const [name, setName] = useState("");
+  const [age, setAge] = useState(0);
+  const [gender, setGender] = useState("Male");
+  const [phoneNo, setPhoneNo] = useState("");
+  const [bloodGroup, setBloodGroup] = useState("A+");
+  const [address, setAddress] = useState("");
 
   useEffect(() => {
     async function fetchDoctors() {
@@ -17,29 +37,130 @@ export default function DashboardPage() {
       setError(null);
 
       try {
-        const response = await fetch(API_URL, {
+        const token = getToken();
+        if (!token) {
+          router.push("/login");
+          return;
+        }
+
+        const response = await fetch(DOCTORS_API_URL, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           cache: "no-store",
         });
 
         if (!response.ok) {
+          if (response.status === 401) {
+            router.push("/login");
+            return;
+          }
+
           throw new Error(`API request failed with status ${response.status}`);
         }
 
         const data: Doctor[] = await response.json();
         setDoctors(data);
+        await fetchPatients(token);
       } catch (err) {
         setError(
-          err instanceof Error
-            ? err.message
-            : "Unable to load doctor profile data."
+          err instanceof Error ? err.message : "Unable to load doctor profile data."
         );
       } finally {
         setIsLoading(false);
       }
     }
 
+    async function fetchPatients(token: string) {
+      setIsPatientsLoading(true);
+
+      try {
+        const response = await fetch(PATIENTS_API_URL, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            router.push("/login");
+            return;
+          }
+          throw new Error(`Patient request failed with status ${response.status}`);
+        }
+
+        const data: Patient[] = await response.json();
+        setPatients(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsPatientsLoading(false);
+      }
+    }
+
     fetchDoctors();
-  }, []);
+  }, [router]);
+
+  async function handleSubmitPatient(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setFormError(null);
+    setFormSuccess(null);
+    setFormLoading(true);
+
+    try {
+      const token = getToken();
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      const response = await fetch(PATIENTS_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name,
+          age,
+          gender,
+          phoneNo,
+          bloodGroup,
+          address,
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.push("/login");
+          return;
+        }
+
+        const errorBody = await response.json();
+        throw new Error(errorBody?.message ?? `Submission failed: ${response.status}`);
+      }
+
+      const patient: Patient = await response.json();
+      setPatients((current) => [patient, ...current]);
+      setFormSuccess("Patient added successfully.");
+      setName("");
+      setAge(0);
+      setGender("Male");
+      setPhoneNo("");
+      setBloodGroup("A+");
+      setAddress("");
+      setFormOpen(false);
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "Unable to save patient.");
+    } finally {
+      setFormLoading(false);
+    }
+  }
 
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-10 text-slate-100 sm:px-6 lg:px-8">
@@ -51,98 +172,231 @@ export default function DashboardPage() {
                 Doctor Dashboard
               </p>
               <h1 className="mt-3 text-4xl font-semibold text-white sm:text-5xl">
-                ChamberHero BD Profile Viewer
+                ChamberHero BD Patient Management
               </h1>
               <p className="mt-3 max-w-2xl text-slate-400 sm:text-lg">
-                Fetching your live doctor profile from the .NET backend and rendering it
-                as a premium healthcare dashboard card.
+                Manage patients securely with JWT-protected API access and live data from Supabase.
               </p>
             </div>
-            <div className="rounded-3xl bg-slate-800/90 px-6 py-4 text-right text-slate-300 shadow-inner shadow-slate-950/20">
-              <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-                API endpoint
-              </p>
-              <p className="mt-2 font-mono text-sm text-emerald-200">{API_URL}</p>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="rounded-3xl bg-slate-800/90 px-6 py-4 text-right text-slate-300 shadow-inner shadow-slate-950/20">
+                <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
+                  API endpoint
+                </p>
+                <p className="mt-2 font-mono text-sm text-emerald-200">{PATIENTS_API_URL}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setFormOpen(true)}
+                className="rounded-3xl bg-emerald-500 px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-emerald-400"
+              >
+                Add new patient
+              </button>
             </div>
           </div>
         </header>
 
         {isLoading ? (
           <section className="rounded-3xl border border-slate-800 bg-slate-900/80 p-10 text-center text-slate-300 shadow-xl shadow-slate-950/20">
-            <p className="text-xl font-medium text-white">Loading doctor profile…</p>
-            <p className="mt-2 text-slate-500">Connecting to the backend service on localhost.</p>
+            <p className="text-xl font-medium text-white">Loading your dashboard…</p>
+            <p className="mt-2 text-slate-500">Fetching doctor and patient data from the secured API.</p>
           </section>
         ) : error ? (
           <section className="rounded-3xl border border-rose-700/40 bg-rose-950/50 p-10 text-center text-rose-100 shadow-xl shadow-rose-950/20">
-            <p className="text-xl font-semibold">Unable to load doctor profile</p>
+            <p className="text-xl font-semibold">Unable to load dashboard</p>
             <p className="mt-3 text-slate-300">{error}</p>
-          </section>
-        ) : doctors.length === 0 ? (
-          <section className="rounded-3xl border border-slate-800 bg-slate-900/80 p-10 text-center text-slate-300 shadow-xl shadow-slate-950/20">
-            <p className="text-xl font-medium text-white">No doctor profiles found.</p>
-            <p className="mt-2 text-slate-500">Make sure your backend is returning the expected JSON payload.</p>
           </section>
         ) : (
           <div className="grid gap-8">
-            {doctors.map((doctor) => (
-              <article
-                key={doctor.id}
-                className="overflow-hidden rounded-[2rem] border border-slate-800 bg-slate-900/85 shadow-2xl shadow-slate-950/20"
-              >
-                <div className="flex flex-col gap-6 p-8 md:flex-row md:items-center md:justify-between md:p-10">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-3 py-1 text-sm font-semibold uppercase tracking-[0.24em] text-emerald-300 ring-1 ring-emerald-500/20">
-                        Verified BMDC
-                      </span>
-                      <span className="rounded-full bg-slate-800 px-3 py-1 text-sm text-slate-400 ring-1 ring-slate-700">
-                        {doctor.systemRole}
-                      </span>
-                    </div>
-                    <h2 className="text-3xl font-semibold text-white sm:text-4xl">
-                      {doctor.fullName}
-                    </h2>
-                    <div className="flex flex-wrap gap-3 text-sm text-slate-400">
-                      <span className="rounded-2xl bg-slate-800/90 px-4 py-2">
-                        {doctor.email}
-                      </span>
-                      <span className="rounded-2xl bg-slate-800/90 px-4 py-2">
-                        {doctor.phoneNo}
-                      </span>
-                      <span className="rounded-2xl bg-slate-800/90 px-4 py-2 text-emerald-300">
-                        BMDC #{doctor.bmdcRegistrationNo}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="rounded-[1.75rem] bg-slate-950/90 p-6 text-slate-300 shadow-xl shadow-slate-950/30 ring-1 ring-slate-700/60 md:w-[380px]">
-                    <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
-                      Subscription
-                    </p>
-                    <p className="mt-3 text-3xl font-semibold text-white">{doctor.billingModel.replace("_", " ")}</p>
-                    <p className="mt-2 text-sm text-slate-500">
-                      Plan tier: <span className="font-semibold text-slate-100">{doctor.plan_tier}</span>
-                    </p>
-                    <div className="mt-6 rounded-3xl bg-slate-900/95 p-4 text-sm text-slate-300">
-                      <p className="font-medium text-slate-100">Active status</p>
-                      <p className="mt-2 text-slate-400">
-                        {doctor.isActive ? "Active" : "Inactive"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border-t border-slate-800/80 bg-slate-950/80 px-8 py-8 md:px-10">
-                  <h3 className="text-xl font-semibold text-white">Qualifications</h3>
-                  <p className="mt-4 max-w-4xl leading-8 text-slate-300">
-                    {doctor.qualificationRaw}
+            <section className="rounded-[2rem] border border-slate-800 bg-slate-900/85 p-8 shadow-2xl shadow-slate-950/20">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.24em] text-emerald-300/80">
+                    Primary doctor
                   </p>
+                  <h2 className="mt-3 text-3xl font-semibold text-white">{doctors[0]?.fullName}</h2>
+                  <p className="mt-2 text-slate-400">{doctors[0]?.email}</p>
                 </div>
-              </article>
-            ))}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-3xl bg-slate-950/85 px-5 py-4 text-slate-200">
+                    <p className="text-sm text-slate-400">Doctors</p>
+                    <p className="mt-2 text-2xl font-semibold text-white">{doctors.length}</p>
+                  </div>
+                  <div className="rounded-3xl bg-slate-950/85 px-5 py-4 text-slate-200">
+                    <p className="text-sm text-slate-400">Patients</p>
+                    <p className="mt-2 text-2xl font-semibold text-white">{patients.length}</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="rounded-[2rem] border border-slate-800 bg-slate-900/85 p-8 shadow-2xl shadow-slate-950/20">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-semibold text-white">Patient roster</h2>
+                  <p className="mt-2 text-slate-400">All patients associated with the logged-in doctor.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFormOpen(true)}
+                  className="rounded-3xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-900 transition hover:bg-emerald-400"
+                >
+                  Add patient
+                </button>
+              </div>
+
+              <div className="mt-8 grid gap-4">
+                {isPatientsLoading ? (
+                  <div className="rounded-3xl border border-slate-800 bg-slate-950/90 px-6 py-8 text-center text-slate-300">
+                    Loading patients…
+                  </div>
+                ) : patients.length === 0 ? (
+                  <div className="rounded-3xl border border-slate-800 bg-slate-950/90 px-6 py-8 text-center text-slate-300">
+                    No patients added yet. Use the button above to start your patient registry.
+                  </div>
+                ) : (
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    {patients.map((patient) => (
+                      <article key={patient.id} className="rounded-3xl border border-slate-800 bg-slate-900/90 p-6 shadow-xl shadow-slate-950/10">
+                        <div className="flex items-center justify-between gap-3">
+                          <h3 className="text-lg font-semibold text-white">{patient.name}</h3>
+                          <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs uppercase tracking-[0.24em] text-emerald-300">
+                            {patient.gender}
+                          </span>
+                        </div>
+                        <p className="mt-3 text-slate-400">{patient.address}</p>
+                        <div className="mt-4 grid gap-2 text-sm text-slate-300">
+                          <p><span className="font-semibold text-slate-200">Age:</span> {patient.age}</p>
+                          <p><span className="font-semibold text-slate-200">Phone:</span> {patient.phoneNo}</p>
+                          <p><span className="font-semibold text-slate-200">Blood group:</span> {patient.bloodGroup}</p>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
           </div>
         )}
       </div>
+
+      {formOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/70 p-4 backdrop-blur-sm sm:items-center">
+          <div className="absolute inset-0" onClick={() => setFormOpen(false)}></div>
+          <div className="relative w-full max-w-2xl overflow-hidden rounded-[2rem] border border-slate-800 bg-slate-900/95 p-8 shadow-2xl">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-semibold text-white">Add new patient</h2>
+                <p className="mt-1 text-sm text-slate-400">Securely register a new patient for the logged-in doctor.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setFormOpen(false)}
+                className="rounded-full bg-slate-800 px-3 py-2 text-slate-300 transition hover:bg-slate-700"
+              >
+                Close
+              </button>
+            </div>
+
+            <form className="mt-8 space-y-6" onSubmit={handleSubmitPatient}>
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="space-y-2 text-sm text-slate-300">
+                  Patient name
+                  <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </label>
+
+                <label className="space-y-2 text-sm text-slate-300">
+                  Age
+                  <input
+                    type="number"
+                    min={0}
+                    value={age}
+                    onChange={(e) => setAge(Number(e.target.value))}
+                    required
+                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="space-y-2 text-sm text-slate-300">
+                  Gender
+                  <select
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  >
+                    {genderOptions.map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="space-y-2 text-sm text-slate-300">
+                  Blood group
+                  <select
+                    value={bloodGroup}
+                    onChange={(e) => setBloodGroup(e.target.value)}
+                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  >
+                    {bloodGroupOptions.map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="space-y-2 text-sm text-slate-300">
+                  Phone
+                  <input
+                    value={phoneNo}
+                    onChange={(e) => setPhoneNo(e.target.value)}
+                    required
+                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </label>
+
+                <label className="space-y-2 text-sm text-slate-300 md:col-span-2">
+                  Address
+                  <textarea
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    required
+                    rows={3}
+                    className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3 text-slate-100 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </label>
+              </div>
+
+              {formError && <p className="text-sm text-rose-400">{formError}</p>}
+              {formSuccess && <p className="text-sm text-emerald-300">{formSuccess}</p>}
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => setFormOpen(false)}
+                  className="rounded-2xl border border-slate-700 bg-slate-800 px-5 py-3 text-sm font-semibold text-slate-300 transition hover:border-slate-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={formLoading}
+                  className="rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:opacity-60"
+                >
+                  {formLoading ? "Saving…" : "Save patient"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

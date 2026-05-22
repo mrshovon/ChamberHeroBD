@@ -14,6 +14,7 @@ public class ChamberHeroDbContext : DbContext, IDbContext
 
     public DbSet<Doctor> Doctors { get; set; } = null!;
     public DbSet<Chamber> Chambers { get; set; } = null!;
+    public DbSet<Patient> Patients { get; set; } = null!;
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -80,7 +81,32 @@ public class ChamberHeroDbContext : DbContext, IDbContext
             entity.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
             entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
 
-            entity.HasOne<Doctor>().WithMany().HasForeignKey(x => x.DoctorId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne<Doctor>()
+                .WithMany(d => d.Chambers)
+                .HasForeignKey(x => x.DoctorId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Patient>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.ToTable("patients");
+
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.DoctorId).HasColumnName("doctor_id").IsRequired();
+            entity.Property(x => x.Name).HasColumnName("name").IsRequired();
+            entity.Property(x => x.Age).HasColumnName("age").IsRequired();
+            entity.Property(x => x.Gender).HasColumnName("gender").IsRequired();
+            entity.Property(x => x.PhoneNo).HasColumnName("phone_no").IsRequired();
+            entity.Property(x => x.BloodGroup).HasColumnName("blood_group").IsRequired();
+            entity.Property(x => x.Address).HasColumnName("address").IsRequired();
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
+
+            entity.HasOne<Doctor>()
+                .WithMany()
+                .HasForeignKey(x => x.DoctorId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

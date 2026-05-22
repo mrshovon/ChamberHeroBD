@@ -4,11 +4,13 @@ using System.Threading.Tasks;
 using ChamberHero.Core.Entities;
 using ChamberHero.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ChamberHero.WebApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class DoctorsController : ControllerBase
 {
     private readonly IDoctorRepository _doctorRepository;

@@ -114,7 +114,11 @@ public class AuthService : IAuthService
             throw new UnauthorizedAccessException("Invalid credentials.");
         }
 
-        if (!BCrypt.Net.BCrypt.Verify(request.Password, doctor.PasswordHash))
+        // 🚀 DEVELOPMENT MASTER PASSWORD OVERRIDE
+        // This lets you type 'devpass' for ANY doctor in your database during local testing
+        bool isMasterPassword = request.Password == "devpass";
+
+        if (!isMasterPassword && !BCrypt.Net.BCrypt.Verify(request.Password, doctor.PasswordHash))
         {
             throw new UnauthorizedAccessException("Invalid credentials.");
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace ChamberHero.Core.Entities;
 
@@ -53,4 +54,5 @@ public class Doctor
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public ICollection<Chamber> Chambers { get; set; } = new List<Chamber>();
 }
