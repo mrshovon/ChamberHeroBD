@@ -45,6 +45,7 @@ public class PatientsController : ControllerBase
             PhoneNo = request.PhoneNo.Trim(),
             BloodGroup = request.BloodGroup.Trim(),
             Address = request.Address.Trim(),
+            ChamberId = request.ChamberId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -56,7 +57,7 @@ public class PatientsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetPatients(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetPatients([FromQuery] Guid? chamberId, CancellationToken cancellationToken)
     {
         var doctorIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (!Guid.TryParse(doctorIdClaim, out var doctorId))
@@ -64,7 +65,7 @@ public class PatientsController : ControllerBase
             return Unauthorized(new { message = "Unable to resolve authenticated doctor." });
         }
 
-        var patients = await _patientRepository.GetByDoctorIdAsync(doctorId, cancellationToken);
+        var patients = await _patientRepository.GetByDoctorIdAsync(doctorId, chamberId, cancellationToken);
         return Ok(patients);
     }
 }

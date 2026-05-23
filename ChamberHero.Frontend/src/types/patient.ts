@@ -7,6 +7,7 @@ export interface Patient {
   phoneNo: string;
   bloodGroup: string;
   address: string;
+  chamberId?: string | null;
   created_at: string;
   updated_at: string;
 }

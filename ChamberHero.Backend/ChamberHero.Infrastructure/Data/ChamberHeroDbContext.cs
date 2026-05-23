@@ -1,3 +1,4 @@
+using Npgsql;
 using ChamberHero.Core.Entities;
 using ChamberHero.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -11,10 +12,13 @@ public class ChamberHeroDbContext : DbContext, IDbContext
         : base(options)
     {
     }
-
+    
     public DbSet<Doctor> Doctors { get; set; } = null!;
     public DbSet<Chamber> Chambers { get; set; } = null!;
     public DbSet<Patient> Patients { get; set; } = null!;
+    public DbSet<Prescription> Prescriptions { get; set; } = null!;
+    public DbSet<PrescriptionItem> PrescriptionItems { get; set; } = null!;
+    public DbSet<Appointment> Appointments { get; set; } = null!;
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
@@ -102,11 +106,76 @@ public class ChamberHeroDbContext : DbContext, IDbContext
             entity.Property(x => x.Address).HasColumnName("address").IsRequired();
             entity.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
             entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
+            entity.Property(x => x.ChamberId).HasColumnName("chamber_id");
 
             entity.HasOne<Doctor>()
                 .WithMany()
                 .HasForeignKey(x => x.DoctorId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Prescription>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.ToTable("prescriptions");
+
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.DoctorId).HasColumnName("doctor_id").IsRequired();
+            entity.Property(x => x.PatientId).HasColumnName("patient_id").IsRequired();
+            entity.Property(x => x.ChamberId).HasColumnName("chamber_id").IsRequired();
+            entity.Property(x => x.ChiefComplaints).HasColumnName("chief_complaints").IsRequired();
+            entity.Property(x => x.MedicalHistory).HasColumnName("medical_history").IsRequired();
+            entity.Property(x => x.Diagnosis).HasColumnName("diagnosis").IsRequired();
+            entity.Property(x => x.Advice).HasColumnName("advice").IsRequired();
+
+            entity.HasMany(x => x.Items)
+                .WithOne(x => x.Prescription)
+                .HasForeignKey(x => x.PrescriptionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<PrescriptionItem>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.ToTable("prescription_items");
+
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.PrescriptionId).HasColumnName("prescription_id").IsRequired();
+            entity.Property(x => x.MedicineName).HasColumnName("medicine_name").IsRequired();
+            entity.Property(x => x.Dosage).HasColumnName("dosage").IsRequired();
+            entity.Property(x => x.Duration).HasColumnName("duration").IsRequired();
+            entity.Property(x => x.Instructions).HasColumnName("instructions").IsRequired();
+
+            entity.HasOne(x => x.Prescription)
+                .WithMany(x => x.Items)
+                .HasForeignKey(x => x.PrescriptionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Appointment>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.ToTable("appointments");
+
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.DoctorId).HasColumnName("doctor_id").IsRequired();
+            entity.Property(x => x.PatientId).HasColumnName("patient_id").IsRequired();
+            entity.Property(x => x.ChamberId).HasColumnName("chamber_id").IsRequired();
+            entity.Property(x => x.SerialNo).HasColumnName("serial_no").IsRequired();
+            entity.Property(x => x.AppointmentDate).HasColumnName("appointment_date").IsRequired();
+            entity.Property(x => x.Status).HasColumnName("status").HasConversion<string>().IsRequired();
+            entity.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+            entity.Property(x => x.UpdatedAt).HasColumnName("updated_at").IsRequired();
+
+            entity.HasOne(x => x.Patient)
+                .WithMany()
+                .HasForeignKey(x => x.PatientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.Chamber)
+                .WithMany()
+                .HasForeignKey(x => x.ChamberId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

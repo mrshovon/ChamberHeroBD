@@ -69,9 +69,14 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Update your controllers configuration to handle cycle references smoothly
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
+        // 🚀 CRITICAL FIX: Ignores object loops by ignoring circular reference chains!
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        
+        // Keep your existing string enum converters below if they are there
         options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
 builder.Services.AddEndpointsApiExplorer();

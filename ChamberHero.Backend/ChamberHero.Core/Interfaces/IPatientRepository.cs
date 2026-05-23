@@ -8,5 +8,5 @@ namespace ChamberHero.Core.Interfaces;
 
 public interface IPatientRepository : IRepository<Patient, Guid>
 {
-    Task<IEnumerable<Patient>> GetByDoctorIdAsync(Guid doctorId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Patient>> GetByDoctorIdAsync(Guid doctorId, Guid? chamberId = null, CancellationToken cancellationToken = default);
 }

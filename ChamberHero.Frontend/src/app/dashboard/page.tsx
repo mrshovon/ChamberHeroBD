@@ -1,14 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Doctor } from "@/types/doctor";
 import type { Patient } from "@/types/patient";
+import type { Appointment, AppointmentStatus } from "@/types/appointment";
 import { getToken } from "@/lib/auth";
+import { useChamber } from "@/context/ChamberContext";
+import ChamberDropdown from "@/components/ChamberDropdown";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5129";
 const DOCTORS_API_URL = `${API_BASE_URL}/doctors`;
 const PATIENTS_API_URL = `${API_BASE_URL}/patients`;
+const APPOINTMENTS_API_URL = `${API_BASE_URL}/appointments`;
 
 const genderOptions = ["Male", "Female", "Other"];
 const bloodGroupOptions = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -17,6 +22,9 @@ export default function DashboardPage() {
   const router = useRouter();
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [isAppointmentsLoading, setIsAppointmentsLoading] = useState(false);
+  const { activeChamber, setActiveChamber } = useChamber();
   const [isLoading, setIsLoading] = useState(true);
   const [isPatientsLoading, setIsPatientsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,6 +38,71 @@ export default function DashboardPage() {
   const [phoneNo, setPhoneNo] = useState("");
   const [bloodGroup, setBloodGroup] = useState("A+");
   const [address, setAddress] = useState("");
+
+  async function fetchPatients(token: string, chamberId?: string | null) {
+    setIsPatientsLoading(true);
+
+    try {
+      const url = chamberId ? `${PATIENTS_API_URL}?chamberId=${chamberId}` : PATIENTS_API_URL;
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.push("/login");
+          return;
+        }
+        throw new Error(`Patient request failed with status ${response.status}`);
+      }
+
+      const data: Patient[] = await response.json();
+      setPatients(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsPatientsLoading(false);
+    }
+  }
+
+  async function fetchAppointments(token: string, chamberId?: string | null) {
+    if (!chamberId) {
+      setAppointments([]);
+      return;
+    }
+
+    setIsAppointmentsLoading(true);
+    try {
+      const response = await fetch(`${APPOINTMENTS_API_URL}/live?chamberId=${chamberId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.push("/login");
+          return;
+        }
+        throw new Error(`Appointments request failed with status ${response.status}`);
+      }
+
+      const data: Appointment[] = await response.json();
+      setAppointments(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsAppointmentsLoading(false);
+    }
+  }
 
   useEffect(() => {
     async function fetchDoctors() {
@@ -63,7 +136,16 @@ export default function DashboardPage() {
 
         const data: Doctor[] = await response.json();
         setDoctors(data);
-        await fetchPatients(token);
+        // Default active chamber to the first chamber from the doctor's profile
+        const firstChamberId = data?.[0]?.chambers?.[0]?.id ?? null;
+        if (firstChamberId) {
+          setActiveChamber(data[0].chambers[0]);
+          await fetchPatients(token, firstChamberId);
+          await fetchAppointments(token, firstChamberId);
+        } else {
+          await fetchPatients(token);
+          await fetchAppointments(token, null);
+        }
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Unable to load doctor profile data."
@@ -73,38 +155,20 @@ export default function DashboardPage() {
       }
     }
 
-    async function fetchPatients(token: string) {
-      setIsPatientsLoading(true);
-
-      try {
-        const response = await fetch(PATIENTS_API_URL, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          if (response.status === 401) {
-            router.push("/login");
-            return;
-          }
-          throw new Error(`Patient request failed with status ${response.status}`);
-        }
-
-        const data: Patient[] = await response.json();
-        setPatients(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsPatientsLoading(false);
-      }
-    }
-
     fetchDoctors();
   }, [router]);
+
+  // Re-fetch patients when active chamber changes
+  useEffect(() => {
+    async function refetch() {
+      const token = getToken();
+      if (!token) return;
+
+      await Promise.all([fetchPatients(token, activeChamber?.id ?? null), fetchAppointments(token, activeChamber?.id ?? null)]);
+    }
+
+    refetch();
+  }, [activeChamber]);
 
   async function handleSubmitPatient(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -119,20 +183,24 @@ export default function DashboardPage() {
         return;
       }
 
+      const body: any = {
+        name,
+        age,
+        gender,
+        phoneNo,
+        bloodGroup,
+        address,
+      };
+
+      if (activeChamber?.id) body.chamberId = activeChamber.id;
+
       const response = await fetch(PATIENTS_API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          name,
-          age,
-          gender,
-          phoneNo,
-          bloodGroup,
-          address,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
@@ -162,6 +230,86 @@ export default function DashboardPage() {
     }
   }
 
+  async function checkInPatient(patientId: string) {
+    if (!activeChamber) {
+      setError("Select a chamber to check in the patient.");
+      return;
+    }
+
+    try {
+      const token = getToken();
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      const response = await fetch(`${APPOINTMENTS_API_URL}/check-in`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          patientId,
+          chamberId: activeChamber.id,
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.push("/login");
+          return;
+        }
+        const body = await response.json();
+        throw new Error(body?.message ?? `Check-in failed: ${response.status}`);
+      }
+
+      await fetchAppointments(token, activeChamber.id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to check in patient.");
+    }
+  }
+
+  async function updateAppointmentStatus(appointmentId: string, status: AppointmentStatus) {
+    try {
+      const token = getToken();
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      const response = await fetch(`${APPOINTMENTS_API_URL}/${appointmentId}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.push("/login");
+          return;
+        }
+        const body = await response.json();
+        throw new Error(body?.message ?? `Update failed: ${response.status}`);
+      }
+
+      if (activeChamber) {
+        await fetchAppointments(token, activeChamber.id);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to update appointment status.");
+    }
+  }
+
+  const getNextStatus = (status: AppointmentStatus): AppointmentStatus | null => {
+    if (status === "Waiting") return "InConsultation";
+    if (status === "InConsultation") return "Completed";
+    return null;
+  };
+
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-10 text-slate-100 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
@@ -179,12 +327,21 @@ export default function DashboardPage() {
               </p>
             </div>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <div className="flex items-center gap-3">
+                  <ChamberDropdown chambers={doctors[0]?.chambers} />
+                </div>
               <div className="rounded-3xl bg-slate-800/90 px-6 py-4 text-right text-slate-300 shadow-inner shadow-slate-950/20">
                 <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
                   API endpoint
                 </p>
                 <p className="mt-2 font-mono text-sm text-emerald-200">{PATIENTS_API_URL}</p>
               </div>
+              <Link
+                href="/dashboard/prescriptions/new"
+                className="rounded-3xl bg-slate-700 px-6 py-3 text-sm font-semibold text-slate-100 transition hover:bg-slate-600"
+              >
+                Create prescription
+              </Link>
               <button
                 type="button"
                 onClick={() => setFormOpen(true)}
@@ -231,6 +388,74 @@ export default function DashboardPage() {
             </section>
 
             <section className="rounded-[2rem] border border-slate-800 bg-slate-900/85 p-8 shadow-2xl shadow-slate-950/20">
+              <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                <div>
+                  <h2 className="text-2xl font-semibold text-white">Live queue</h2>
+                  <p className="mt-2 text-slate-400">Current appointments for {activeChamber?.name ?? "the selected chamber"}.</p>
+                </div>
+                <div className="rounded-3xl bg-slate-950/85 px-5 py-4 text-slate-200">
+                  <p className="text-sm text-slate-400">Queue count</p>
+                  <p className="mt-2 text-2xl font-semibold text-white">{appointments.length}</p>
+                </div>
+              </div>
+
+              <div className="mt-8 space-y-4">
+                {isAppointmentsLoading ? (
+                  <div className="rounded-3xl border border-slate-800 bg-slate-950/90 px-6 py-8 text-center text-slate-300">
+                    Loading queue…
+                  </div>
+                ) : appointments.length === 0 ? (
+                  <div className="rounded-3xl border border-slate-800 bg-slate-950/90 px-6 py-8 text-center text-slate-300">
+                    No active appointments for this chamber yet.
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    {appointments.map((appointment) => (
+                      <div key={appointment.id} className="rounded-3xl border border-slate-800 bg-slate-900/90 p-6 shadow-xl shadow-slate-950/10">
+                        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Serial No.</p>
+                            <p className="mt-2 text-3xl font-semibold text-white">{appointment.serialNo}</p>
+                            <p className="mt-3 text-slate-400">{appointment.patient.name} · Age {appointment.patient.age}</p>
+                          </div>
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                            <span className={`rounded-full px-4 py-2 text-sm font-semibold ${
+                              appointment.status === "Waiting" ? "bg-amber-500/15 text-amber-300" :
+                              appointment.status === "InConsultation" ? "bg-sky-500/15 text-sky-300" :
+                              appointment.status === "Completed" ? "bg-emerald-500/15 text-emerald-300" : "bg-rose-500/15 text-rose-300"
+                            }`}>
+                              {appointment.status}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next = getNextStatus(appointment.status);
+                                if (next) updateAppointmentStatus(appointment.id, next);
+                              }}
+                              disabled={appointment.status === "Completed" || appointment.status === "Cancelled"}
+                              className="rounded-2xl bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-slate-700 disabled:opacity-50"
+                            >
+                              {appointment.status === "Waiting" ? "Start consultation" : appointment.status === "InConsultation" ? "Complete" : "No action"}
+                            </button>
+                            {appointment.status !== "Completed" && appointment.status !== "Cancelled" && (
+                              <button
+                                type="button"
+                                onClick={() => updateAppointmentStatus(appointment.id, "Cancelled")}
+                                className="rounded-2xl border border-rose-600 bg-rose-600/10 px-4 py-2 text-sm font-semibold text-rose-200 transition hover:bg-rose-600/20"
+                              >
+                                Cancel
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <section className="rounded-[2rem] border border-slate-800 bg-slate-900/85 p-8 shadow-2xl shadow-slate-950/20">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <h2 className="text-2xl font-semibold text-white">Patient roster</h2>
@@ -270,6 +495,17 @@ export default function DashboardPage() {
                           <p><span className="font-semibold text-slate-200">Phone:</span> {patient.phoneNo}</p>
                           <p><span className="font-semibold text-slate-200">Blood group:</span> {patient.bloodGroup}</p>
                         </div>
+                        {activeChamber && (
+                          <div className="mt-6 flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() => checkInPatient(patient.id)}
+                              className="rounded-2xl bg-blue-500 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-blue-400"
+                            >
+                              Check-In to Chamber Queue
+                            </button>
+                          </div>
+                        )}
                       </article>
                     ))}
                   </div>

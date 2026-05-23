@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ChamberHero.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a5f250198d013395c826c9dda4e905a646d50f06")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+964dab9eefff601634588a377a0c19fba32b194e")]
 [assembly: System.Reflection.AssemblyProductAttribute("ChamberHero.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ChamberHero.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

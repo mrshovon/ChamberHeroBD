@@ -8,4 +8,5 @@ public class PatientCreateDto
     public string PhoneNo { get; set; } = string.Empty;
     public string BloodGroup { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
+    public Guid? ChamberId { get; set; }
 }

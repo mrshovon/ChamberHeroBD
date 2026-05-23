@@ -19,11 +19,17 @@ public class PatientRepository : Repository<Patient>, IPatientRepository
         _db = context;
     }
 
-    public async Task<IEnumerable<Patient>> GetByDoctorIdAsync(Guid doctorId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Patient>> GetByDoctorIdAsync(Guid doctorId, Guid? chamberId = null, CancellationToken cancellationToken = default)
     {
-        return await _db.Patients
+        var query = _db.Patients
             .AsNoTracking()
-            .Where(x => x.DoctorId == doctorId)
-            .ToListAsync(cancellationToken);
+            .Where(x => x.DoctorId == doctorId);
+
+        if (chamberId.HasValue)
+        {
+            query = query.Where(x => x.ChamberId == chamberId.Value);
+        }
+
+        return await query.ToListAsync(cancellationToken);
     }
 }

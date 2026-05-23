@@ -1,4 +1,5 @@
 import "./globals.css";
+import { ChamberProvider } from "@/context/ChamberContext";
 import type { Metadata, Viewport } from "next";
 
 // 1. Separate Core SEO Metadata
@@ -24,7 +25,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       {/* ADD IT HERE to silence the body attribute mismatch! */}
       <body className="antialiased" suppressHydrationWarning>
-        {children}
+        <ChamberProvider>{children}</ChamberProvider>
       </body>
     </html>
   );
